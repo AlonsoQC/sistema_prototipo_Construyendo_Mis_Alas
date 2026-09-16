@@ -52,7 +52,7 @@ CUSTOM_CSS = """
         margin: 0 !important;
     }
 
-    /* CAMPOS INTERACTIVOS (Selectbox, TextInput, NumberInput, DateInput) SOMBREADOS Y VISIBLES */
+    /* CAMPOS INTERACTIVOS SOMBREADOS Y VISIBLES */
     div[data-baseweb="select"] > div, 
     div[data-baseweb="input"] > div, 
     input, 
@@ -65,7 +65,7 @@ CUSTOM_CSS = """
         font-size: 1.05rem !important;
     }
 
-    /* Hover y Foco en los elementos de entrada */
+    /* Hover y Foco */
     div[data-baseweb="select"]:hover > div, 
     div[data-baseweb="input"]:hover > div, 
     input:focus {
@@ -73,7 +73,7 @@ CUSTOM_CSS = """
         background-color: #E2E8F0 !important;
     }
 
-    /* Menú desplegable (Opciones del Selectbox) */
+    /* Menú desplegable */
     ul[role="listbox"] {
         background-color: #FFFFFF !important;
         border: 2px solid #CBD5E1 !important;
@@ -100,7 +100,6 @@ CUSTOM_CSS = """
         border: 1px solid #E2E8F0 !important;
     }
 
-    /* Pestañas inactivas (Sombreadas suavemente) */
     .stTabs [data-baseweb="tab"] {
         background-color: #EDF2F7 !important;
         border-radius: 8px !important;
@@ -114,7 +113,6 @@ CUSTOM_CSS = """
         font-weight: 700 !important;
     }
 
-    /* Pestaña seleccionada (Azul brillante sombreado) */
     .stTabs [aria-selected="true"] {
         background-color: #2563EB !important;
         border-color: #1D4ED8 !important;
@@ -126,7 +124,7 @@ CUSTOM_CSS = """
         font-weight: 800 !important;
     }
 
-    /* BOTONES DE OPCIÓN (RADIO BUTTONS) EN CAJAS SOMBREADAS */
+    /* BOTONES DE OPCIÓN (RADIO) */
     div[role="radiogroup"] {
         background-color: #F8FAFC !important;
         padding: 12px !important;
@@ -194,7 +192,7 @@ CUSTOM_CSS = """
 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# --- MANEJO SEGURO DE SECRETO / VARIABLES DE ENTORNO ---
+# --- MANEJO SEGURO DE DATABASE ---
 try:
   DB_URL = st.secrets.get("DATABASE_URL", "")
 except Exception:
@@ -215,11 +213,11 @@ def inicializar_db_nube(engine):
   with engine.begin() as conn:
     conn.execute(
         text("""
-            CREATE TABLE IF NOT EXISTS colegio_datos (
-                id INT PRIMARY KEY,
-                datos JSONB NOT NULL
-            );
-        """)
+                CREATE TABLE IF NOT EXISTS colegio_datos (
+                    id INT PRIMARY KEY,
+                    datos JSONB NOT NULL
+                );
+            """)
     )
 
 
@@ -240,17 +238,18 @@ def normalizar_datos(datos):
     if "alumno" in c and "beneficiario" not in c:
       c["beneficiario"] = c.pop("alumno")
 
+  # Carpetas por defecto
+  if "carpetas" not in datos or not datos["carpetas"]:
+    datos["carpetas"] = ["Tareas", "Asistencia", "Exámenes"]
+  else:
+    for folder_def in ["Tareas", "Asistencia", "Exámenes"]:
+      if folder_def not in datos["carpetas"]:
+        datos["carpetas"].append(folder_def)
+
   # Normalizar campo 'carpeta' en plan_semestres
   for t in datos.get("plan_semestres", []):
     if "carpeta" not in t or not t["carpeta"]:
       t["carpeta"] = "Tareas"
-
-  if "carpetas" not in datos:
-    datos["carpetas"] = ["Tareas", "Asistencia", "Exámenes"]
-  else:
-    for default_folder in ["Tareas", "Asistencia", "Exámenes"]:
-      if default_folder not in datos["carpetas"]:
-        datos["carpetas"].append(default_folder)
 
   return datos
 
@@ -267,7 +266,7 @@ def obtener_datos_defecto():
               "semana": 1,
               "fecha": "2026-09-01",
               "tarea": "Examen Diagnóstico",
-              "maximo": 100,
+              "maximo": 100.0,
               "carpeta": "Exámenes",
           },
           {
@@ -276,7 +275,7 @@ def obtener_datos_defecto():
               "semana": 2,
               "fecha": "2026-09-08",
               "tarea": "Proyecto Parcial 1",
-              "maximo": 100,
+              "maximo": 100.0,
               "carpeta": "Tareas",
           },
       ],
@@ -677,43 +676,399 @@ def aplicacion_principal():
         st.info("No hay semestres registrados en el sistema.")
 
     # ---------------------------------------------------------
-    # 3. PANEL DE ADMINISTRACIÓN (GRILLA EDITABLE + CARPETAS)
+    # 3. PANEL DE ADMINISTRACIÓN COMPLETAMENTE REESTRUCTURADO Y SIMPLIFICADO
     # ---------------------------------------------------------
     with tab_admin:
       if st.session_state.rol_logueado != "administrador":
         st.error("🚫 Esta sección requiere permisos de Administrador.")
       else:
         st.markdown(
-            "<div class='section-card'><p class='section-card-title'>⚙️ Panel"
-            " de Control y Administración</p><p style='margin:3px 0 0"
-            " 0;'>Gestiona beneficiarios, actividades en carpetas y puntajes"
-            " directamente.</p></div>",
+            "<div class='section-card'><p class='section-card-title'>⚙️ Centro"
+            " de Control y Administración</p><p style='margin:3px 0 0 0;'>Elige"
+            " abajo la acción que deseas realizar. Todo se gestiona en"
+            " cuadrículas fáciles e interactivas.</p></div>",
             unsafe_allow_html=True,
         )
 
-        admin_tab_ben, admin_tab_act, admin_tab_cal = st.tabs([
-            "👥 1. Beneficiarios (Edición en Grilla)",
-            "📅 2. Actividades y Carpetas",
-            "💯 3. Calificaciones (Asignar Puntajes)",
-        ])
+        # Menú de selección de acción directa para no saturar la pantalla
+        accion_admin = st.selectbox(
+            "👉 ¿Qué deseas administrar o editar hoy?:",
+            [
+                "✏️ 1. Editar Actividades en Cuadrícula (Semestre, Fecha,"
+                " Puntos, Carpeta)",
+                "📁 2. Administrar Carpetas (Crear, Renombrar, Eliminar)",
+                "➕ 3. Crear Una Nueva Actividad Individual",
+                "👥 4. Administrar Lista de Beneficiarios (Cuadrícula)",
+                "💯 5. Asignar Puntajes / Calificaciones",
+            ],
+            key="select_accion_admin_main",
+        )
+
+        st.markdown("---")
 
         # =====================================================
-        # SUBTAB 1: GESTIÓN DE BENEFICIARIOS CON GRILLA EDITABLE (st.data_editor)
+        # OPCIÓN 1: EDITAR ACTIVIDADES DIRECTAMENTE EN LA GRILLA
         # =====================================================
-        with admin_tab_ben:
+        if "✏️ 1. Editar Actividades" in accion_admin:
           st.markdown(
               "<div class='section-card'><p class='section-card-title'>✏️"
-              " Cuadrícula Directa de Beneficiarios</p><p style='margin:3px 0 0"
-              " 0;'>Puedes modificar nombres, agregar filas o cambiar de"
-              " semestre directamente en la tabla de abajo.</p></div>",
+              " Cuadrícula de Edición Directa de Actividades</p><p"
+              " style='margin:3px 0 0 0;'>Modifica el semestre, nombre de la"
+              " actividad, puntos máximos, fecha y carpeta directamente en las"
+              " celdas.</p></div>",
               unsafe_allow_html=True,
           )
 
-          df_ben_actual = pd.DataFrame(st.session_state.db["beneficiarios"])
+          plan_actual = st.session_state.db.get("plan_semestres", [])
+          carpetas_lista = st.session_state.db.get(
+              "carpetas", ["Tareas", "Asistencia", "Exámenes"]
+          )
+
+          if not plan_actual:
+            st.info(
+                "Aún no hay actividades creadas. Selecciona '➕ 3. Crear Una"
+                " Nueva Actividad' en la parte superior para comenzar."
+            )
+          else:
+            df_plan_edit = pd.DataFrame(plan_actual)
+
+            # Asegurar columnas correctas
+            for col in [
+                "id",
+                "semestre",
+                "semana",
+                "fecha",
+                "tarea",
+                "maximo",
+                "carpeta",
+            ]:
+              if col not in df_plan_edit.columns:
+                if col in ["semestre", "semana"]:
+                  df_plan_edit[col] = 1
+                elif col == "maximo":
+                  df_plan_edit[col] = 100.0
+                elif col == "carpeta":
+                  df_plan_edit[col] = "Tareas"
+                else:
+                  df_plan_edit[col] = ""
+
+            st.write(
+                "💡 **Doble clic en cualquier celda para editar. Puedes borrar"
+                " filas seleccionándolas y presionando la tecla Supr /"
+                " Delete:**"
+            )
+
+            grid_actividades = st.data_editor(
+                df_plan_edit,
+                column_config={
+                    "id": st.column_config.NumberColumn(
+                        "ID Interno", disabled=True
+                    ),
+                    "semestre": st.column_config.NumberColumn(
+                        "Semestre", min_value=1, max_value=12, step=1, required=True
+                    ),
+                    "semana": st.column_config.NumberColumn(
+                        "Semana", min_value=1, max_value=52, step=1, required=True
+                    ),
+                    "fecha": st.column_config.TextColumn(
+                        "Fecha (AAAA-MM-DD)", required=True
+                    ),
+                    "tarea": st.column_config.TextColumn(
+                        "Nombre de la Actividad", required=True
+                    ),
+                    "maximo": st.column_config.NumberColumn(
+                        "Puntos Máximos",
+                        min_value=1.0,
+                        max_value=1000.0,
+                        step=1.0,
+                        required=True,
+                    ),
+                    "carpeta": st.column_config.SelectboxColumn(
+                        "Carpeta Destino",
+                        options=carpetas_lista,
+                        required=True,
+                    ),
+                },
+                num_rows="dynamic",
+                use_container_width=True,
+                key="editor_grid_plan_actividades",
+            )
+
+            if st.button(
+                "💾 Guardar Cambios en la Cuadrícula de Actividades",
+                key="btn_save_grid_actividades",
+            ):
+              nuevas_actividades = []
+              next_id = 1
+              for _, row in grid_actividades.iterrows():
+                act_nombre = str(row["tarea"]).strip()
+                if act_nombre and act_nombre != "nan":
+                  try:
+                    sem_val = int(row["semestre"])
+                  except Exception:
+                    sem_val = 1
+                  try:
+                    sem_num = int(row["semana"])
+                  except Exception:
+                    sem_num = 1
+                  try:
+                    max_val = float(row["maximo"])
+                  except Exception:
+                    max_val = 100.0
+
+                  f_val = (
+                      str(row["fecha"]).strip()
+                      if str(row["fecha"]).strip()
+                      else str(date.today())
+                  )
+                  carp_val = (
+                      str(row["carpeta"]).strip()
+                      if str(row["carpeta"]).strip() in carpetas_lista
+                      else carpetas_lista[0]
+                  )
+
+                  try:
+                    row_id = int(row["id"])
+                  except Exception:
+                    row_id = next_id
+
+                  nuevas_actividades.append({
+                      "id": row_id,
+                      "semestre": sem_val,
+                      "semana": sem_num,
+                      "fecha": f_val,
+                      "tarea": act_nombre,
+                      "maximo": max_val,
+                      "carpeta": carp_val,
+                  })
+                  next_id = max(next_id, row_id + 1)
+
+              st.session_state.db["plan_semestres"] = nuevas_actividades
+              guardar_datos(st.session_state.db)
+              st.session_state.mensaje_exito = (
+                  "✅ ¡Todas las actividades fueron actualizadas con éxito"
+                  " desde la cuadrícula!"
+              )
+              st.rerun()
+
+        # =====================================================
+        # OPCIÓN 2: ADMINISTRAR CARPETAS (CREAR, EDITAR, ELIMINAR)
+        # =====================================================
+        elif "📁 2. Administrar Carpetas" in accion_admin:
+          st.markdown(
+              "<div class='section-card'><p class='section-card-title'>📁"
+              " Administración Completa de Carpetas</p><p style='margin:3px 0 0"
+              " 0;'>Crea carpetas nuevas, renombralas o elimina las que ya no"
+              " utilices.</p></div>",
+              unsafe_allow_html=True,
+          )
+
+          carpetas_actuales = st.session_state.db.get(
+              "carpetas", ["Tareas", "Asistencia", "Exámenes"]
+          )
+
+          col_c1, col_c2 = st.columns(2)
+
+          with col_c1:
+            st.markdown("#### ➕ Crear Nueva Carpeta")
+            nueva_carp_txt = st.text_input(
+                "Nombre de la nueva carpeta (ej. Taller, Proyectos,"
+                " Exposición):",
+                key="input_crear_carpeta_nueva",
+            )
+            if st.button(
+                "✨ Guardar Nueva Carpeta", key="btn_crear_carpeta_nueva"
+            ):
+              nombre_f = nueva_carp_txt.strip()
+              if not nombre_f:
+                st.warning("⚠️ Escribe un nombre para la carpeta.")
+              elif nombre_f in carpetas_actuales:
+                st.warning("⚠️ Ya existe una carpeta con ese nombre.")
+              else:
+                st.session_state.db["carpetas"].append(nombre_f)
+                guardar_datos(st.session_state.db)
+                st.session_state.mensaje_exito = (
+                    f"✅ Carpeta '📁 {nombre_f}' creada exitosamente."
+                )
+                st.rerun()
+
+          with col_c2:
+            st.markdown("#### ✏️ Renombrar o 🗑️ Eliminar Carpeta Existente")
+            if carpetas_actuales:
+              carpeta_sel_gestion = st.selectbox(
+                  "Selecciona la carpeta a modificar:",
+                  carpetas_actuales,
+                  key="select_carpeta_mod_gest",
+              )
+
+              nuevo_nombre_carp = st.text_input(
+                  "Nuevo nombre para esta carpeta:",
+                  value=carpeta_sel_gestion,
+                  key="input_nuevo_nombre_carpeta",
+              )
+
+              c_btn1, c_btn2 = st.columns(2)
+              with c_btn1:
+                if st.button(
+                    "💾 Renombrar Carpeta", key="btn_renombrar_carpeta"
+                ):
+                  nom_ren = nuevo_nombre_carp.strip()
+                  if not nom_ren:
+                    st.warning("⚠️ El nombre no puede estar vacío.")
+                  elif (
+                      nom_ren in carpetas_actuales
+                      and nom_ren != carpeta_sel_gestion
+                  ):
+                    st.warning("⚠️ Ya existe otra carpeta con ese nombre.")
+                  else:
+                    # Actualizar lista de carpetas
+                    idx = st.session_state.db["carpetas"].index(
+                        carpeta_sel_gestion
+                    )
+                    st.session_state.db["carpetas"][idx] = nom_ren
+
+                    # Actualizar actividades asociadas
+                    for t in st.session_state.db.get("plan_semestres", []):
+                      if t.get("carpeta") == carpeta_sel_gestion:
+                        t["carpeta"] = nom_ren
+
+                    guardar_datos(st.session_state.db)
+                    st.session_state.mensaje_exito = (
+                        f"✅ Carpeta renombrada a '📁 {nom_ren}' y actividades"
+                        " actualizadas."
+                    )
+                    st.rerun()
+
+              with c_btn2:
+                if st.button("🗑️ Eliminar Carpeta", key="btn_eliminar_carpeta"):
+                  if len(carpetas_actuales) <= 1:
+                    st.error(
+                        "🚫 Debes conservar al menos una carpeta en el sistema."
+                    )
+                  else:
+                    st.session_state.db["carpetas"].remove(carpeta_sel_gestion)
+                    carpeta_reemplazo = st.session_state.db["carpetas"][0]
+
+                    # Reasignar actividades de la carpeta eliminada a la primera carpeta disponible
+                    for t in st.session_state.db.get("plan_semestres", []):
+                      if t.get("carpeta") == carpeta_sel_gestion:
+                        t["carpeta"] = carpeta_reemplazo
+
+                    guardar_datos(st.session_state.db)
+                    st.session_state.mensaje_exito = (
+                        f"✅ Carpeta '📁 {carpeta_sel_gestion}' eliminada. Sus"
+                        f" actividades pasaron a '📁 {carpeta_reemplazo}'."
+                    )
+                    st.rerun()
+
+          st.markdown("---")
+          st.markdown("#### 📁 Carpetas Actuales en el Sistema:")
+          st.write(
+              " | ".join(
+                  [f"• **{c}**" for c in st.session_state.db["carpetas"]]
+              )
+          )
+
+        # =====================================================
+        # OPCIÓN 3: CREAR NUEVA ACTIVIDAD INDIVIDUAL
+        # =====================================================
+        elif "➕ 3. Crear Una Nueva Actividad" in accion_admin:
+          st.markdown(
+              "<div class='section-card'><p class='section-card-title'>➕"
+              " Formulario de Registro para Nueva Actividad</p><p"
+              " style='margin:3px 0 0 0;'>Completa estos sencillos datos para"
+              " agregar una actividad al plan de estudios.</p></div>",
+              unsafe_allow_html=True,
+          )
+
+          carpetas_list = st.session_state.db.get(
+              "carpetas", ["Tareas", "Asistencia", "Exámenes"]
+          )
+
+          col_a1, col_a2 = st.columns(2)
+          with col_a1:
+            sem_nuevo = st.number_input(
+                "Semestre destino:",
+                min_value=1,
+                max_value=12,
+                value=1,
+                key="add_act_sem",
+            )
+            semana_nueva = st.number_input(
+                "Número de semana:",
+                min_value=1,
+                max_value=52,
+                value=1,
+                key="add_act_semana",
+            )
+            fecha_nueva = st.date_input(
+                "Fecha estimada de entrega:",
+                value=date.today(),
+                key="add_act_fecha",
+            )
+
+          with col_a2:
+            nombre_act_nueva = st.text_input(
+                "Nombre de la Actividad / Registro:", key="add_act_nombre"
+            )
+            pts_max_nuevos = st.number_input(
+                "Puntaje Máximo (Valor):",
+                min_value=1.0,
+                value=100.0,
+                step=5.0,
+                key="add_act_pts",
+            )
+            carpeta_dest = st.selectbox(
+                "📁 Asignar a la carpeta:", carpetas_list, key="add_act_carpeta"
+            )
+
+          if st.button("💾 Guardar Esta Nueva Actividad", key="btn_save_single_act"):
+            if not nombre_act_nueva.strip():
+              st.warning("⚠️ Escribe un nombre para la actividad.")
+            else:
+              nuevo_id = (
+                  max(
+                      [t["id"] for t in st.session_state.db["plan_semestres"]],
+                      default=0,
+                  )
+                  + 1
+              )
+              st.session_state.db["plan_semestres"].append({
+                  "id": nuevo_id,
+                  "semestre": sem_nuevo,
+                  "semana": semana_nueva,
+                  "fecha": str(fecha_nueva),
+                  "tarea": nombre_act_nueva.strip(),
+                  "maximo": pts_max_nuevos,
+                  "carpeta": carpeta_dest,
+              })
+              guardar_datos(st.session_state.db)
+              st.session_state.mensaje_exito = (
+                  f"✅ Actividad '{nombre_act_nueva.strip()}' guardada"
+                  f" exitosamente en el Semestre {sem_nuevo} / Carpeta '📁"
+                  f" {carpeta_dest}'."
+              )
+              st.rerun()
+
+        # =====================================================
+        # OPCIÓN 4: BENEFICIARIOS EN CUADRÍCULA
+        # =====================================================
+        elif "👥 4. Administrar Lista de Beneficiarios" in accion_admin:
+          st.markdown(
+              "<div class='section-card'><p class='section-card-title'>✏️"
+              " Cuadrícula Directa de Beneficiarios</p><p style='margin:3px 0 0"
+              " 0;'>Modifica nombres, cambia de semestre o agrega personas"
+              " directamente en la cuadrícula.</p></div>",
+              unsafe_allow_html=True,
+          )
+
+          df_ben_actual = pd.DataFrame(
+              st.session_state.db.get("beneficiarios", [])
+          )
           if df_ben_actual.empty:
             df_ben_actual = pd.DataFrame(columns=["nombre", "semestre"])
 
-          st.write("💡 **Haz doble clic en cualquier celda para editarla:**")
+          st.write("💡 **Haz doble clic en cualquier celda para editar:**")
 
           df_ben_editado = st.data_editor(
               df_ben_actual,
@@ -731,11 +1086,12 @@ def aplicacion_principal():
               },
               num_rows="dynamic",
               use_container_width=True,
-              key="ben_data_editor",
+              key="ben_data_editor_v3",
           )
 
           if st.button(
-              "💾 Guardar Cambios de la Cuadrícula", key="btn_save_grid_ben"
+              "💾 Guardar Cambios de la Cuadrícula de Beneficiarios",
+              key="btn_save_grid_ben_v3",
           ):
             nuevos_beneficiarios = []
             for _, row in df_ben_editado.iterrows():
@@ -758,256 +1114,24 @@ def aplicacion_principal():
             st.rerun()
 
         # =====================================================
-        # SUBTAB 2: GESTIÓN DE ACTIVIDADES CON CARPETAS
+        # OPCIÓN 5: ASIGNAR PUNTAJES / CALIFICACIONES
         # =====================================================
-        with admin_tab_act:
-          sub_act = st.radio(
-              "¿Qué deseas hacer con las actividades y carpetas?",
-              [
-                  "➕ Crear Nueva Actividad / Carpeta",
-                  "✏️ Editar o Eliminar Actividad Existente",
-              ],
-              horizontal=True,
-              key="sub_act_radio_v2",
-          )
-
-          st.markdown("---")
-
-          if sub_act == "➕ Crear Nueva Actividad / Carpeta":
-            st.markdown(
-                "<div class='section-card'><p class='section-card-title'>➕"
-                " Registrar Nueva Actividad con Carpeta</p></div>",
-                unsafe_allow_html=True,
-            )
-            col1, col2 = st.columns(2)
-            with col1:
-              sem_plan = st.number_input(
-                  "Semestre",
-                  min_value=1,
-                  max_value=12,
-                  value=1,
-                  key="sem_plan_new_v2",
-              )
-              semana_num = st.number_input(
-                  "Número de Semana",
-                  min_value=1,
-                  max_value=30,
-                  value=1,
-                  key="sem_num_new_v2",
-              )
-              fecha_entrega = st.date_input(
-                  "Fecha Estimada", value=date.today(), key="fecha_new_v2"
-              )
-
-            with col2:
-              nombre_tarea_plan = st.text_input(
-                  "Nombre de la Actividad / Registro", key="nombre_act_new_v2"
-              )
-              max_pts_plan = st.number_input(
-                  "Puntaje Máximo (Valor)",
-                  min_value=1.0,
-                  value=100.0,
-                  step=5.0,
-                  key="max_pts_new_v2",
-              )
-
-              # Selección o creación de Carpetas
-              carpetas_existentes = st.session_state.db.get(
-                  "carpetas", ["Tareas", "Asistencia", "Exámenes"]
-              )
-              carpeta_opciones = carpetas_existentes + [
-                  "➕ Crear nueva carpeta..."
-              ]
-              carpeta_sel = st.selectbox(
-                  "📁 Selecciona la Carpeta destino:",
-                  carpeta_opciones,
-                  key="select_carpeta_dest",
-              )
-
-              carpeta_final = carpeta_sel
-              if carpeta_sel == "➕ Crear nueva carpeta...":
-                nueva_carpeta_input = st.text_input(
-                    "Escribe el nombre de la nueva carpeta:",
-                    key="nueva_carpeta_txt",
-                )
-                carpeta_final = nueva_carpeta_input.strip()
-
-            if st.button("💾 Guardar Actividad en el Plan", key="btn_add_act_v2"):
-              if nombre_tarea_plan.strip() == "":
-                st.warning("⚠️ Escribe el nombre de la actividad.")
-              elif carpeta_sel == "➕ Crear nueva carpeta..." and not carpeta_final:
-                st.warning("⚠️ Escribe el nombre para la nueva carpeta.")
-              else:
-                if carpeta_final not in st.session_state.db["carpetas"]:
-                  st.session_state.db["carpetas"].append(carpeta_final)
-
-                nuevo_id = (
-                    max(
-                        [
-                            t["id"]
-                            for t in st.session_state.db["plan_semestres"]
-                        ],
-                        default=0,
-                    )
-                    + 1
-                )
-                st.session_state.db["plan_semestres"].append({
-                    "id": nuevo_id,
-                    "semestre": sem_plan,
-                    "semana": semana_num,
-                    "fecha": str(fecha_entrega),
-                    "tarea": nombre_tarea_plan.strip(),
-                    "maximo": max_pts_plan,
-                    "carpeta": carpeta_final,
-                })
-                guardar_datos(st.session_state.db)
-                st.session_state.mensaje_exito = (
-                    f"✅ Actividad '{nombre_tarea_plan.strip()}' guardada en la"
-                    f" carpeta '📁 {carpeta_final}'."
-                )
-                st.rerun()
-
-          elif sub_act == "✏️ Editar o Eliminar Actividad Existente":
-            st.markdown(
-                "<div class='section-card'><p class='section-card-title'>✏️"
-                " Modificar o Borrar Actividades Creadas</p></div>",
-                unsafe_allow_html=True,
-            )
-            tareas_existentes = st.session_state.db["plan_semestres"]
-
-            if tareas_existentes:
-              dict_tareas = {
-                  f"[{t.get('carpeta', 'Tareas')}] Sem {t['semana']} (Semestre"
-                  f" {t['semestre']}): {t['tarea']}": t
-                  for t in tareas_existentes
-              }
-              tarea_sel_label = st.selectbox(
-                  "Selecciona la actividad a modificar:",
-                  list(dict_tareas.keys()),
-                  key="select_act_mod",
-              )
-              tarea_a_editar = dict_tareas[tarea_sel_label]
-
-              col_e1, col_e2 = st.columns(2)
-              with col_e1:
-                sem_edit = st.number_input(
-                    "Semestre",
-                    min_value=1,
-                    max_value=12,
-                    value=int(tarea_a_editar["semestre"]),
-                    key="sem_edit_v2",
-                )
-                semana_edit = st.number_input(
-                    "Número de Semana",
-                    min_value=1,
-                    max_value=30,
-                    value=int(tarea_a_editar["semana"]),
-                    key="sem_num_edit_v2",
-                )
-                try:
-                  fecha_val = date.fromisoformat(tarea_a_editar["fecha"])
-                except Exception:
-                  fecha_val = date.today()
-                fecha_edit = st.date_input(
-                    "Fecha Estimada", value=fecha_val, key="fecha_edit_v2"
-                )
-
-              with col_e2:
-                nombre_edit = st.text_input(
-                    "Nombre de la Actividad",
-                    value=tarea_a_editar["tarea"],
-                    key="nombre_edit_v2",
-                )
-                max_edit = st.number_input(
-                    "Puntaje Máximo",
-                    min_value=1.0,
-                    value=float(tarea_a_editar["maximo"]),
-                    step=5.0,
-                    key="max_edit_v2",
-                )
-                carpetas_list = st.session_state.db.get(
-                    "carpetas", ["Tareas", "Asistencia", "Exámenes"]
-                )
-                if tarea_a_editar.get("carpeta") not in carpetas_list:
-                  carpetas_list.append(tarea_a_editar.get("carpeta", "Tareas"))
-                idx_c = (
-                    carpetas_list.index(
-                        tarea_a_editar.get("carpeta", "Tareas")
-                    )
-                    if tarea_a_editar.get("carpeta", "Tareas") in carpetas_list
-                    else 0
-                )
-                carpeta_edit = st.selectbox(
-                    "Carpeta",
-                    carpetas_list,
-                    index=idx_c,
-                    key="select_carpeta_edit",
-                )
-
-              col_b1, col_b2 = st.columns(2)
-              with col_b1:
-                if st.button(
-                    "💾 Guardar Cambios en esta Actividad",
-                    key="btn_update_act_v2",
-                ):
-                  if nombre_edit.strip() == "":
-                    st.warning(
-                        "⚠️ El nombre de la actividad no puede estar vacío."
-                    )
-                  else:
-                    tarea_a_editar["semestre"] = sem_edit
-                    tarea_a_editar["semana"] = semana_edit
-                    tarea_a_editar["fecha"] = str(fecha_edit)
-                    tarea_a_editar["tarea"] = nombre_edit.strip()
-                    tarea_a_editar["maximo"] = max_edit
-                    tarea_a_editar["carpeta"] = carpeta_edit
-                    guardar_datos(st.session_state.db)
-                    st.session_state.mensaje_exito = (
-                        f"✅ Actividad '{nombre_edit.strip()}' actualizada"
-                        " correctamente."
-                    )
-                    st.rerun()
-
-              with col_b2:
-                if st.button(
-                    "🗑️ Eliminar esta Actividad", key="btn_delete_act_v2"
-                ):
-                  st.session_state.db["plan_semestres"] = [
-                      t
-                      for t in st.session_state.db["plan_semestres"]
-                      if t["id"] != tarea_a_editar["id"]
-                  ]
-                  st.session_state.db["calificaciones"] = [
-                      c
-                      for c in st.session_state.db["calificaciones"]
-                      if c["tarea_id"] != tarea_a_editar["id"]
-                  ]
-                  guardar_datos(st.session_state.db)
-                  st.session_state.mensaje_exito = (
-                      "✅ Actividad eliminada correctamente."
-                  )
-                  st.rerun()
-            else:
-              st.info("No hay actividades para editar.")
-
-        # =====================================================
-        # SUBTAB 3: ASIGNACIÓN DE CALIFICACIONES
-        # =====================================================
-        with admin_tab_cal:
+        elif "💯 5. Asignar Puntajes" in accion_admin:
           st.markdown(
               "<div class='section-card'><p class='section-card-title'>💯 Asignar"
-              " o Cambiar Puntaje</p></div>",
+              " o Modificar Puntaje de Beneficiarios</p></div>",
               unsafe_allow_html=True,
           )
           lista_beneficiarios = [
-              b["nombre"] for b in st.session_state.db["beneficiarios"]
+              b["nombre"]
+              for b in st.session_state.db.get("beneficiarios", [])
           ]
 
           if lista_beneficiarios:
             beneficiario_eval = st.selectbox(
                 "1. Selecciona a la Persona:",
                 lista_beneficiarios,
-                key="cal_ben_select_v2",
+                key="cal_ben_select_v3",
             )
             beneficiario_obj = next(
                 b
@@ -1031,7 +1155,7 @@ def aplicacion_principal():
               tarea_seleccionada_label = st.selectbox(
                   "2. Selecciona la Actividad:",
                   list(opciones_tareas.keys()),
-                  key="cal_act_select_v2",
+                  key="cal_act_select_v3",
               )
               tarea_obj = opciones_tareas[tarea_seleccionada_label]
 
@@ -1058,10 +1182,10 @@ def aplicacion_principal():
                   max_value=float(tarea_obj["maximo"]),
                   value=val_defecto,
                   step=0.5,
-                  key="pts_input_v2",
+                  key="pts_input_v3",
               )
 
-              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v2"):
+              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v3"):
                 if calif_previa:
                   calif_previa["puntaje"] = puntaje_ingresado
                   st.session_state.mensaje_exito = (
