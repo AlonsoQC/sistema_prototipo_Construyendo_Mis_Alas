@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS corregidos para garantizar legibilidad completa en modo claro y oscuro
+# Estilos CSS minuciosos para fondos sombreados en todas las secciones, entradas, selectores y botones
 CUSTOM_CSS = """
 <style>
     /* Fondo blanco general */
@@ -23,9 +23,10 @@ CUSTOM_CSS = """
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
     }
 
-    /* Forzar texto oscuro de alto contraste en etiquetas, párrafos y títulos */
+    /* Regla general para texto */
     p, label, span, h1, h2, h3, h4, .stMarkdown, .stWidgetLabel label {
         color: #0F172A !important;
+        font-weight: 600;
     }
 
     /* Título Principal */
@@ -34,50 +35,124 @@ CUSTOM_CSS = """
         font-weight: 800 !important;
     }
 
-    /* Pestañas (Tabs): Fondo del contenedor */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px !important;
-        background-color: #F1F5F9 !important;
-        padding: 8px !important;
-        border-radius: 12px !important;
+    /* TARJETAS DE SECCIÓN Y SUBTÍTULOS SOMBREADOS */
+    .section-card {
+        background-color: #F0F9FF !important;
+        border-left: 6px solid #0284C7 !important;
+        border-radius: 10px !important;
+        padding: 14px 18px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    }
+    
+    .section-card-title {
+        color: #0369A1 !important;
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
     }
 
-    /* Pestañas INACTIVAS (Fondo claro y texto gris oscuro visible) */
-    .stTabs [data-baseweb="tab"] {
+    /* CAMPOS INTERACTIVOS (Selectbox, TextInput, NumberInput, DateInput) SOMBREADOS Y VISIBLES */
+    div[data-baseweb="select"] > div, 
+    div[data-baseweb="input"] > div, 
+    input, 
+    .stSelectbox div[role="button"] {
+        background-color: #F1F5F9 !important;
+        border: 2px solid #CBD5E1 !important;
+        border-radius: 10px !important;
+        color: #0F172A !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+    }
+
+    /* Hover y Foco en los elementos de entrada */
+    div[data-baseweb="select"]:hover > div, 
+    div[data-baseweb="input"]:hover > div, 
+    input:focus {
+        border-color: #2563EB !important;
+        background-color: #E2E8F0 !important;
+    }
+
+    /* Menú desplegable (Opciones del Selectbox) */
+    ul[role="listbox"] {
         background-color: #FFFFFF !important;
+        border: 2px solid #CBD5E1 !important;
+        border-radius: 10px !important;
+    }
+    
+    li[role="option"] {
+        color: #0F172A !important;
+        background-color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+    
+    li[role="option"]:hover, li[aria-selected="true"] {
+        background-color: #E0F2FE !important;
+        color: #0369A1 !important;
+    }
+
+    /* PESTAÑAS (TABS) SOMBREADAS */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px !important;
+        background-color: #F8FAFC !important;
+        padding: 10px !important;
+        border-radius: 12px !important;
+        border: 1px solid #E2E8F0 !important;
+    }
+
+    /* Pestañas inactivas (Sombreadas suavemente) */
+    .stTabs [data-baseweb="tab"] {
+        background-color: #EDF2F7 !important;
         border-radius: 8px !important;
         border: 1px solid #CBD5E1 !important;
-        padding: 8px 16px !important;
+        padding: 10px 18px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
     
     .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {
         color: #334155 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
 
-    /* Pestaña ACTIVADA (Fondo azul y texto blanco brillante) */
+    /* Pestaña seleccionada (Azul brillante sombreado) */
     .stTabs [aria-selected="true"] {
         background-color: #2563EB !important;
-        border-color: #2563EB !important;
+        border-color: #1D4ED8 !important;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4) !important;
     }
 
     .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {
         color: #FFFFFF !important;
+        font-weight: 800 !important;
+    }
+
+    /* BOTONES DE OPCIÓN (RADIO BUTTONS) EN CAJAS SOMBREADAS */
+    div[role="radiogroup"] {
+        background-color: #F8FAFC !important;
+        padding: 12px !important;
+        border-radius: 10px !important;
+        border: 1px solid #E2E8F0 !important;
+        gap: 15px !important;
+    }
+    
+    div[role="radiogroup"] label {
+        background-color: #FFFFFF !important;
+        padding: 8px 14px !important;
+        border-radius: 8px !important;
+        border: 1px solid #CBD5E1 !important;
+    }
+
+    div[role="radiogroup"] label p {
+        color: #0F172A !important;
         font-weight: 700 !important;
     }
 
-    /* Opciones de Radio Buttons (Agregar/Editar) */
-    div[role="radiogroup"] label p, div[role="radiogroup"] label span {
-        color: #0F172A !important;
-        font-weight: 600 !important;
-    }
-
-    /* Botones de Acción (Fondo azul y texto blanco obligatorio) */
+    /* BOTONES DE ACCIÓN PRINCIPALES */
     .stButton > button {
         border-radius: 10px !important;
         font-size: 1.05rem !important;
         font-weight: 700 !important;
-        padding: 0.6rem 1.4rem !important;
+        padding: 0.7rem 1.5rem !important;
         border: none !important;
         background-color: #2563EB !important;
         box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3) !important;
@@ -87,7 +162,14 @@ CUSTOM_CSS = """
         color: #FFFFFF !important;
     }
 
-    /* Cajas de Métricas */
+    /* Cajas de métricas */
+    div[data-testid="stMetric"] {
+        background-color: #F8FAFC !important;
+        border: 2px solid #E2E8F0 !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
+    }
+    
     div[data-testid="stMetricValue"] {
         font-size: 1.8rem !important;
         font-weight: 800 !important;
@@ -273,8 +355,14 @@ def aplicacion_principal():
 
   # --- AUTENTICACIÓN ---
   if st.session_state.usuario_logueado is None:
-    st.subheader("🔑 Ingreso al Sistema")
-    st.write("Selecciona una opción para comenzar de forma muy sencilla.")
+    st.markdown(
+        "<div class='section-card'>"
+        "<p class='section-card-title'>🔑 Ingreso al Sistema</p>"
+        "<p style='margin:5px 0 0 0;'>Selecciona una opción para comenzar de"
+        " forma muy sencilla.</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
     mostrar_mensaje_exito()
 
     opcion_auth = st.radio(
@@ -347,9 +435,9 @@ def aplicacion_principal():
     col_user, col_logout = st.columns([3, 1])
     with col_user:
       st.markdown(
-          "<div style='background-color:#E0F2FE; padding:12px;"
+          "<div style='background-color:#E0F2FE; padding:12px 18px;"
           " border-radius:10px; color:#0369A1; font-weight:bold;"
-          " font-size:1.1rem;'>👤 Sesión activa:"
+          " font-size:1.1rem; border: 1px solid #BAE6FD;'>👤 Sesión activa:"
           f" <b>{st.session_state.usuario_logueado}</b> | Rol:"
           f" <b>{st.session_state.rol_logueado.upper()}</b></div>",
           unsafe_allow_html=True,
@@ -374,10 +462,12 @@ def aplicacion_principal():
     # 1. BUSCADOR POR BENEFICIARIO
     # ---------------------------------------------------------
     with tab_buscar_beneficiario:
-      st.markdown("### 📋 Calificaciones y Avance Individual")
-      st.write(
-          "Selecciona el nombre de la persona para ver cómo va con sus"
-          " puntajes."
+      st.markdown(
+          "<div class='section-card'><p class='section-card-title'>📋"
+          " Calificaciones y Avance Individual</p><p style='margin:3px 0 0"
+          " 0;'>Selecciona el nombre de la persona para ver cómo va con sus"
+          " puntajes.</p></div>",
+          unsafe_allow_html=True,
       )
 
       nombres_beneficiarios = [
@@ -478,7 +568,11 @@ def aplicacion_principal():
     # 2. BUSCADOR POR SEMESTRE
     # ---------------------------------------------------------
     with tab_buscar_semestre:
-      st.markdown("### 📅 Plan Completo de Actividades por Semestre")
+      st.markdown(
+          "<div class='section-card'><p class='section-card-title'>📅 Plan"
+          " Completo de Actividades por Semestre</p></div>",
+          unsafe_allow_html=True,
+      )
       semestres_disponibles = sorted(
           list(
               set(
@@ -544,9 +638,11 @@ def aplicacion_principal():
       if st.session_state.rol_logueado != "administrador":
         st.error("🚫 Esta sección requiere permisos de Administrador.")
       else:
-        st.markdown("### ⚙️ Panel de Control y Administración")
-        st.write(
-            "Elige la tarea que deseas realizar con los botones de abajo:"
+        st.markdown(
+            "<div class='section-card'><p class='section-card-title'>⚙️ Panel"
+            " de Control y Administración</p><p style='margin:3px 0 0 0;'>Elige"
+            " la tarea que deseas realizar con los botones de abajo:</p></div>",
+            unsafe_allow_html=True,
         )
 
         # Sub-pestañas internas limpias y sin saltos bruscos de pantalla
@@ -573,7 +669,11 @@ def aplicacion_principal():
           st.markdown("---")
 
           if sub_ben == "➕ Agregar Nuevo Beneficiario":
-            st.markdown("#### ➕ Registrar una Nueva Persona")
+            st.markdown(
+                "<div class='section-card'><p class='section-card-title'>➕"
+                " Registrar una Nueva Persona</p></div>",
+                unsafe_allow_html=True,
+            )
             col_b1, col_b2 = st.columns(2)
             with col_b1:
               nuevo_beneficiario = st.text_input(
@@ -613,7 +713,11 @@ def aplicacion_principal():
                   st.rerun()
 
           elif sub_ben == "✏️ Editar o Eliminar Existente":
-            st.markdown("#### ✏️ Cambiar Nombre o Eliminar una Persona")
+            st.markdown(
+                "<div class='section-card'><p class='section-card-title'>✏️"
+                " Cambiar Nombre o Eliminar una Persona</p></div>",
+                unsafe_allow_html=True,
+            )
             lista_ben = st.session_state.db["beneficiarios"]
 
             if lista_ben:
@@ -717,7 +821,11 @@ def aplicacion_principal():
           st.markdown("---")
 
           if sub_act == "➕ Crear Nueva Actividad":
-            st.markdown("#### ➕ Registrar Nueva Actividad")
+            st.markdown(
+                "<div class='section-card'><p class='section-card-title'>➕"
+                " Registrar Nueva Actividad</p></div>",
+                unsafe_allow_html=True,
+            )
             col1, col2 = st.columns(2)
             with col1:
               sem_plan = st.number_input(
@@ -791,7 +899,11 @@ def aplicacion_principal():
                   st.rerun()
 
           elif sub_act == "✏️ Editar o Eliminar Actividad Existente":
-            st.markdown("#### ✏️ Modificar o Borrar Actividades Creadas")
+            st.markdown(
+                "<div class='section-card'><p class='section-card-title'>✏️"
+                " Modificar o Borrar Actividades Creadas</p></div>",
+                unsafe_allow_html=True,
+            )
             tareas_existentes = st.session_state.db["plan_semestres"]
 
             if tareas_existentes:
@@ -892,7 +1004,11 @@ def aplicacion_principal():
         # SUBTAB 3: ASIGNACIÓN DE CALIFICACIONES
         # =====================================================
         with admin_tab_cal:
-          st.markdown("#### 💯 Asignar o Cambiar Puntaje")
+          st.markdown(
+              "<div class='section-card'><p class='section-card-title'>💯 Asignar"
+              " o Cambiar Puntaje</p></div>",
+              unsafe_allow_html=True,
+          )
           lista_beneficiarios = [
               b["nombre"] for b in st.session_state.db["beneficiarios"]
           ]
