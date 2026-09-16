@@ -13,102 +13,98 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS para interfaz amigable, fondo blanco, colores vivos y alta legibilidad
+# Estilos CSS corregidos para garantizar legibilidad completa en modo claro y oscuro
 CUSTOM_CSS = """
 <style>
-    /* Fondo blanco general y texto oscuro de alto contraste */
+    /* Fondo blanco general */
     .stApp {
         background-color: #FFFFFF !important;
-        color: #1E293B !important;
+        color: #0F172A !important;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
     }
 
-    /* Encabezados coloridos y claros */
+    /* Forzar texto oscuro de alto contraste en etiquetas, párrafos y títulos */
+    p, label, span, h1, h2, h3, h4, .stMarkdown, .stWidgetLabel label {
+        color: #0F172A !important;
+    }
+
+    /* Título Principal */
     h1 {
         color: #0284C7 !important;
         font-weight: 800 !important;
-        font-size: 2.2rem !important;
-    }
-    h2, h3 {
-        color: #0F172A !important;
-        font-weight: 700 !important;
     }
 
-    /* Tarjetas y Contenedores */
-    div[data-testid="stVerticalBlock"] > div.element-container {
-        color: #1E293B;
+    /* Pestañas (Tabs): Fondo del contenedor */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px !important;
+        background-color: #F1F5F9 !important;
+        padding: 8px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Pestañas INACTIVAS (Fondo claro y texto gris oscuro visible) */
+    .stTabs [data-baseweb="tab"] {
+        background-color: #FFFFFF !important;
+        border-radius: 8px !important;
+        border: 1px solid #CBD5E1 !important;
+        padding: 8px 16px !important;
     }
     
-    .stCard {
-        background-color: #F8FAFC;
-        border: 2px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {
+        color: #334155 !important;
+        font-weight: 600 !important;
     }
 
-    /* Botones grandes, claros y coloridos */
+    /* Pestaña ACTIVADA (Fondo azul y texto blanco brillante) */
+    .stTabs [aria-selected="true"] {
+        background-color: #2563EB !important;
+        border-color: #2563EB !important;
+    }
+
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+
+    /* Opciones de Radio Buttons (Agregar/Editar) */
+    div[role="radiogroup"] label p, div[role="radiogroup"] label span {
+        color: #0F172A !important;
+        font-weight: 600 !important;
+    }
+
+    /* Botones de Acción (Fondo azul y texto blanco obligatorio) */
     .stButton > button {
         border-radius: 10px !important;
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
         font-weight: 700 !important;
         padding: 0.6rem 1.4rem !important;
-        transition: all 0.2s ease-in-out !important;
         border: none !important;
-        color: #FFFFFF !important;
         background-color: #2563EB !important;
         box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3) !important;
     }
     
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        background-color: #1D4ED8 !important;
-        box-shadow: 0 6px 10px -1px rgba(37, 99, 235, 0.4) !important;
-    }
-
-    /* Pestañas (Tabs) llamativas y fáciles de identificar */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #F1F5F9;
-        padding: 8px;
-        border-radius: 12px;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #FFFFFF;
-        border-radius: 8px;
-        color: #475569;
-        font-weight: 600;
-        font-size: 1.05rem;
-        border: 1px solid #CBD5E1;
-        padding: 0 16px;
-    }
-
-    .stTabs [aria-selected="true"] {
-        background-color: #2563EB !important;
+    .stButton > button p, .stButton > button span {
         color: #FFFFFF !important;
-        border-color: #2563EB !important;
     }
 
-    /* Cajas de métricas simples */
+    /* Cajas de Métricas */
     div[data-testid="stMetricValue"] {
         font-size: 1.8rem !important;
         font-weight: 800 !important;
         color: #059669 !important;
     }
 
-    /* Notificaciones amigables */
+    /* Notificaciones */
     .stSuccess {
         background-color: #DCFCE7 !important;
-        color: #15803D !important;
         border: 1px solid #86EFAC !important;
         border-radius: 10px !important;
     }
+    .stSuccess p, .stSuccess span {
+        color: #15803D !important;
+    }
 
-    /* Ocultar elementos técnicos molestos */
+    /* Ocultar marca de agua técnica */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
