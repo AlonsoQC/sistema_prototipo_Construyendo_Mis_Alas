@@ -834,7 +834,7 @@ def aplicacion_principal():
 
           df_plan_edit = pd.DataFrame(plan_filtrado)
 
-          # Garantizar columnas necesarias y tipos adecuados
+          # Garantizar columnas necesarias
           for col in [
               "id",
               "semestre",
@@ -859,15 +859,20 @@ def aplicacion_principal():
                 )
                 df_plan_edit[col] = default_c
               else:
-                df_plan_edit[col] = ""
+                df_plan_edit[col] = None
+
+          # Convertir la columna fecha a objeto date de Python
+          if "fecha" in df_plan_edit.columns and not df_plan_edit.empty:
+            df_plan_edit["fecha"] = pd.to_datetime(
+                df_plan_edit["fecha"], errors="coerce"
+            ).dt.date
 
           st.write(
-              "💡 **Selecciona opciones en los desplegables (Semestre, Carpeta)"
-              " para llenar más rápido. Para agregar una nueva asignación, haz"
-              " clic en '+' al final de la tabla:**"
+              "💡 **Haz clic en la celda de fecha para abrir el mini calendario"
+              " desplegable. Muestra Día, Mes y Año para seleccionar"
+              " directamente:**"
           )
 
-          # Lista de semestres para opción rápida de selección
           opciones_semestres = list(range(1, 13))
 
           grid_actividades = st.data_editor(
@@ -884,8 +889,8 @@ def aplicacion_principal():
                       step=1,
                       required=True,
                   ),
-                  "fecha": st.column_config.TextColumn(
-                      "Fecha de Entrega (AAAA-MM-DD)", required=True
+                  "fecha": st.column_config.DateColumn(
+                      "Fecha de Entrega", format="DD/MM/YYYY", required=False
                   ),
                   "tarea": st.column_config.TextColumn(
                       "Nombre de la Asignación", required=True
@@ -905,12 +910,12 @@ def aplicacion_principal():
               },
               num_rows="dynamic",
               use_container_width=True,
-              key="editor_grid_plan_actividades_v5",
+              key="editor_grid_plan_actividades_v7",
           )
 
           if st.button(
               "💾 Guardar Cambios en las Asignaciones",
-              key="btn_save_grid_actividades_v5",
+              key="btn_save_grid_actividades_v7",
           ):
             ids_modificados = set()
             nuevas_asignaciones_mod = []
@@ -919,7 +924,11 @@ def aplicacion_principal():
 
             for _, row in grid_actividades.iterrows():
               nombre_asig = str(row["tarea"]).strip()
-              if nombre_asig and nombre_asig != "nan":
+              if (
+                  nombre_asig
+                  and nombre_asig != "nan"
+                  and nombre_asig != "None"
+              ):
                 try:
                   sem_val = int(row["semestre"])
                 except Exception:
@@ -933,12 +942,15 @@ def aplicacion_principal():
                 except Exception:
                   max_val = 100.0
 
-                f_val = (
-                    str(row["fecha"]).strip()
-                    if str(row["fecha"]).strip()
-                    and str(row["fecha"]).strip() != "nan"
-                    else str(date.today())
-                )
+                # Mantiene la fecha seleccionada o vacía
+                if pd.notna(row["fecha"]) and str(row["fecha"]).strip() not in [
+                    "nan",
+                    "None",
+                    "",
+                ]:
+                  f_val = str(row["fecha"]).strip()
+                else:
+                  f_val = ""
 
                 raw_c_val = str(row["carpeta"]).strip()
                 if raw_c_val in carpetas_actuales:
@@ -1023,11 +1035,11 @@ def aplicacion_principal():
               },
               num_rows="dynamic",
               use_container_width=True,
-              key="ben_data_editor_v5",
+              key="ben_data_editor_v7",
           )
 
           if st.button(
-              "💾 Guardar Cambios de Beneficiarios", key="btn_save_grid_ben_v5"
+              "💾 Guardar Cambios de Beneficiarios", key="btn_save_grid_ben_v7"
           ):
             nuevos_beneficiarios = []
             for _, row in df_ben_editado.iterrows():
@@ -1067,7 +1079,7 @@ def aplicacion_principal():
             beneficiario_eval = st.selectbox(
                 "1. Selecciona a la Persona:",
                 lista_beneficiarios,
-                key="cal_ben_select_v5",
+                key="cal_ben_select_v7",
             )
             beneficiario_obj = next(
                 b
@@ -1091,7 +1103,7 @@ def aplicacion_principal():
               tarea_seleccionada_label = st.selectbox(
                   "2. Selecciona la Asignación:",
                   list(opciones_tareas.keys()),
-                  key="cal_act_select_v5",
+                  key="cal_act_select_v7",
               )
               tarea_obj = opciones_tareas[tarea_seleccionada_label]
 
@@ -1118,10 +1130,10 @@ def aplicacion_principal():
                   max_value=float(tarea_obj["maximo"]),
                   value=val_defecto,
                   step=0.5,
-                  key="pts_input_v5",
+                  key="pts_input_v7",
               )
 
-              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v5"):
+              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v7"):
                 if calif_previa:
                   calif_previa["puntaje"] = puntaje_ingresado
                   st.session_state.mensaje_exito = (
