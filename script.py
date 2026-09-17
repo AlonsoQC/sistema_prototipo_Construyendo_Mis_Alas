@@ -739,7 +739,8 @@ def aplicacion_principal():
                 st.session_state.db["carpetas"].append(nombre_f)
                 guardar_datos(st.session_state.db)
                 st.session_state.mensaje_exito = (
-                    f"✅ Carpeta '📁 {nombre_f}' creada exitosamente."
+                    f"✅ Carpeta '📁 {nombre_f}' creada exitosamente. Ahora"
+                    " puedes agregar asignaciones dentro de ella."
                 )
                 st.rerun()
 
@@ -832,18 +833,8 @@ def aplicacion_principal():
             plan_filtrado = plan_actual
 
           df_plan_edit = pd.DataFrame(plan_filtrado)
-          if df_plan_edit.empty:
-            df_plan_edit = pd.DataFrame(columns=[
-                "id",
-                "semestre",
-                "semana",
-                "fecha",
-                "tarea",
-                "maximo",
-                "carpeta",
-            ])
 
-          # Garantizar columnas necesarias
+          # Garantizar columnas necesarias y tipos adecuados
           for col in [
               "id",
               "semestre",
@@ -859,27 +850,32 @@ def aplicacion_principal():
               elif col == "maximo":
                 df_plan_edit[col] = 100.0
               elif col == "carpeta":
-                df_plan_edit[col] = (
-                    carpetas_actuales[0] if carpetas_actuales else "Tareas"
+                default_c = (
+                    filtro_carpeta_grilla
+                    if filtro_carpeta_grilla != "-- Mostrar todas las carpetas --"
+                    else (
+                        carpetas_actuales[0] if carpetas_actuales else "Tareas"
+                    )
                 )
+                df_plan_edit[col] = default_c
               else:
                 df_plan_edit[col] = ""
 
           st.write(
-              "💡 **Haz doble clic en cualquier celda para modificar datos o"
-              " agrega filas al final de la cuadrícula:**"
+              "💡 **Selecciona opciones en los desplegables (Semestre, Carpeta)"
+              " para llenar más rápido. Para agregar una nueva asignación, haz"
+              " clic en '+' al final de la tabla:**"
           )
+
+          # Lista de semestres para opción rápida de selección
+          opciones_semestres = list(range(1, 13))
 
           grid_actividades = st.data_editor(
               df_plan_edit,
               column_config={
                   "id": st.column_config.NumberColumn("ID", disabled=True),
-                  "semestre": st.column_config.NumberColumn(
-                      "Semestre",
-                      min_value=1,
-                      max_value=12,
-                      step=1,
-                      required=True,
+                  "semestre": st.column_config.SelectboxColumn(
+                      "Semestre", options=opciones_semestres, required=True
                   ),
                   "semana": st.column_config.NumberColumn(
                       "Semana",
@@ -889,7 +885,7 @@ def aplicacion_principal():
                       required=True,
                   ),
                   "fecha": st.column_config.TextColumn(
-                      "Fecha de Entrega", required=True
+                      "Fecha de Entrega (AAAA-MM-DD)", required=True
                   ),
                   "tarea": st.column_config.TextColumn(
                       "Nombre de la Asignación", required=True
@@ -909,12 +905,12 @@ def aplicacion_principal():
               },
               num_rows="dynamic",
               use_container_width=True,
-              key="editor_grid_plan_actividades_v4",
+              key="editor_grid_plan_actividades_v5",
           )
 
           if st.button(
               "💾 Guardar Cambios en las Asignaciones",
-              key="btn_save_grid_actividades_v4",
+              key="btn_save_grid_actividades_v5",
           ):
             ids_modificados = set()
             nuevas_asignaciones_mod = []
@@ -940,17 +936,23 @@ def aplicacion_principal():
                 f_val = (
                     str(row["fecha"]).strip()
                     if str(row["fecha"]).strip()
+                    and str(row["fecha"]).strip() != "nan"
                     else str(date.today())
                 )
-                c_val = (
-                    str(row["carpeta"]).strip()
-                    if str(row["carpeta"]).strip() in carpetas_actuales
-                    else carpetas_actuales[0]
-                )
+
+                raw_c_val = str(row["carpeta"]).strip()
+                if raw_c_val in carpetas_actuales:
+                  c_val = raw_c_val
+                elif filtro_carpeta_grilla != "-- Mostrar todas las carpetas --":
+                  c_val = filtro_carpeta_grilla
+                else:
+                  c_val = (
+                      carpetas_actuales[0] if carpetas_actuales else "Tareas"
+                  )
 
                 try:
                   row_id = int(row["id"])
-                  if row_id <= 0:
+                  if row_id <= 0 or pd.isna(row["id"]):
                     row_id = next_id
                     next_id += 1
                 except Exception:
@@ -969,6 +971,7 @@ def aplicacion_principal():
                 })
 
             if filtro_carpeta_grilla != "-- Mostrar todas las carpetas --":
+              # Mantener asignaciones que pertenecían a OTRAS carpetas
               otras_asignaciones = [
                   t
                   for t in plan_actual
@@ -1012,21 +1015,19 @@ def aplicacion_principal():
                   "nombre": st.column_config.TextColumn(
                       "Nombre Completo de la Persona", required=True
                   ),
-                  "semestre": st.column_config.NumberColumn(
+                  "semestre": st.column_config.SelectboxColumn(
                       "Semestre Cursando",
-                      min_value=1,
-                      max_value=12,
-                      step=1,
+                      options=list(range(1, 13)),
                       required=True,
                   ),
               },
               num_rows="dynamic",
               use_container_width=True,
-              key="ben_data_editor_v4",
+              key="ben_data_editor_v5",
           )
 
           if st.button(
-              "💾 Guardar Cambios de Beneficiarios", key="btn_save_grid_ben_v4"
+              "💾 Guardar Cambios de Beneficiarios", key="btn_save_grid_ben_v5"
           ):
             nuevos_beneficiarios = []
             for _, row in df_ben_editado.iterrows():
@@ -1066,7 +1067,7 @@ def aplicacion_principal():
             beneficiario_eval = st.selectbox(
                 "1. Selecciona a la Persona:",
                 lista_beneficiarios,
-                key="cal_ben_select_v4",
+                key="cal_ben_select_v5",
             )
             beneficiario_obj = next(
                 b
@@ -1090,7 +1091,7 @@ def aplicacion_principal():
               tarea_seleccionada_label = st.selectbox(
                   "2. Selecciona la Asignación:",
                   list(opciones_tareas.keys()),
-                  key="cal_act_select_v4",
+                  key="cal_act_select_v5",
               )
               tarea_obj = opciones_tareas[tarea_seleccionada_label]
 
@@ -1117,10 +1118,10 @@ def aplicacion_principal():
                   max_value=float(tarea_obj["maximo"]),
                   value=val_defecto,
                   step=0.5,
-                  key="pts_input_v4",
+                  key="pts_input_v5",
               )
 
-              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v4"):
+              if st.button("💾 Guardar Puntaje", key="btn_save_calif_v5"):
                 if calif_previa:
                   calif_previa["puntaje"] = puntaje_ingresado
                   st.session_state.mensaje_exito = (
