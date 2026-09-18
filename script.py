@@ -13,219 +13,252 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ESTILOS: fondo blanco, letras grandes y legibles, tarjetas con color
+# --- ESTILOS CSS PROFESIONALES Y LIMPIOS ---
 CUSTOM_CSS = """
 <style>
-/* Fondo blanco general y letra más grande para facilitar la lectura */
-.stApp {
-    background-color: #FFFFFF !important;
-    color: #0F172A !important;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    font-size: 1.02rem !important;
-}
+    /* Importación de tipografía profesional */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-p, label, span, h1, h2, h3, h4, .stMarkdown, .stWidgetLabel label {
-    color: #0F172A !important;
-    font-weight: 600;
-}
+    /* Reset global y estilo base */
+    html, body, .stApp {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        background-color: #F8FAFC !important;
+        color: #1E293B !important;
+    }
 
-h1 {
-    color: #0284C7 !important;
-    font-weight: 800 !important;
-}
+    /* Padding de contenedor principal */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 1200px !important;
+    }
 
-/* Subtítulo debajo del título principal */
-.subtitulo-app {
-    color: #475569 !important;
-    font-size: 1.15rem !important;
-    font-weight: 500 !important;
-    margin-top: 10px !important;
-    margin-bottom: 15px !important;
-}
+    /* Jerarquía Tipográfica */
+    h1, h2, h3, h4 {
+        color: #0F172A !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+    }
 
-/* TARJETAS DE SECCIÓN */
-.section-card {
-    background-color: #F0F9FF !important;
-    border-left: 6px solid #0284C7 !important;
-    border-radius: 10px !important;
-    padding: 14px 18px !important;
-    margin-bottom: 20px !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
-}
+    p, label, span, .stMarkdown, .stWidgetLabel label {
+        color: #334155 !important;
+        font-weight: 500;
+    }
 
-.section-card-title {
-    color: #0369A1 !important;
-    font-size: 1.3rem !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-}
+    /* ENCABEZADO CORPORATIVO "CONSTRUYENDO MIS ALAS" */
+    .brand-header {
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        padding: 24px 28px;
+        border-radius: 16px;
+        color: #FFFFFF !important;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.15), 0 4px 6px -4px rgba(2, 132, 199, 0.1);
+    }
 
-/* Tarjeta de ayuda */
-.help-card {
-    background-color: #FEFCE8 !important;
-    border-left: 6px solid #EAB308 !important;
-    border-radius: 10px !important;
-    padding: 14px 18px !important;
-    margin-bottom: 16px !important;
-}
+    .brand-header h1 {
+        color: #FFFFFF !important;
+        margin: 0 !important;
+        font-size: 2.1rem !important;
+        font-weight: 800 !important;
+    }
 
-/* CAMPOS INTERACTIVOS */
-div[data-baseweb="select"] > div,
-div[data-baseweb="input"] > div,
-input,
-.stSelectbox div[role="button"] {
-    background-color: #F1F5F9 !important;
-    border: 2px solid #CBD5E1 !important;
-    border-radius: 10px !important;
-    color: #0F172A !important;
-    font-weight: 600 !important;
-    font-size: 1.05rem !important;
-}
+    .brand-header p {
+        color: #E0F2FE !important;
+        margin: 6px 0 0 0 !important;
+        font-size: 1rem !important;
+        font-weight: 400 !important;
+    }
 
-div[data-baseweb="select"]:hover > div,
-div[data-baseweb="input"]:hover > div,
-input:focus {
-    border-color: #2563EB !important;
-    background-color: #E2E8F0 !important;
-}
+    /* TARJETAS DE SECCIÓN Y SUBTÍTULOS ELEGANTES */
+    .section-card {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-left: 5px solid #0284C7 !important;
+        border-radius: 12px !important;
+        padding: 18px 22px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+    }
 
-ul[role="listbox"] {
-    background-color: #FFFFFF !important;
-    border: 2px solid #CBD5E1 !important;
-    border-radius: 10px !important;
-}
+    .section-card-title {
+        color: #0F172A !important;
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+    }
 
-li[role="option"] {
-    color: #0F172A !important;
-    background-color: #FFFFFF !important;
-    font-weight: 600 !important;
-}
+    .section-card p {
+        color: #64748B !important;
+        font-size: 0.95rem !important;
+    }
 
-li[role="option"]:hover, li[aria-selected="true"] {
-    background-color: #E0F2FE !important;
-    color: #0369A1 !important;
-}
+    /* TARJETA DE AYUDA */
+    .help-card {
+        background-color: #FFFBEB !important;
+        border: 1px solid #FDE68A !important;
+        border-left: 5px solid #F59E0B !important;
+        border-radius: 12px !important;
+        padding: 18px 20px !important;
+        margin-bottom: 20px !important;
+    }
 
-/* PESTAÑAS */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 10px !important;
-    background-color: #F8FAFC !important;
-    padding: 10px !important;
-    border-radius: 12px !important;
-    border: 1px solid #E2E8F0 !important;
-}
+    /* SOLUCIÓN PESTAÑAS (TABS) - TEXTOS LIMPIDOS SIN ENCIMAR */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px !important;
+        background-color: #F1F5F9 !important;
+        padding: 6px !important;
+        border-radius: 12px !important;
+        border: 1px solid #E2E8F0 !important;
+    }
 
-.stTabs [data-baseweb="tab"] {
-    background-color: #EDF2F7 !important;
-    border-radius: 8px !important;
-    border: 1px solid #CBD5E1 !important;
-    padding: 10px 18px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-}
+    .stTabs [data-baseweb="tab"] {
+        height: auto !important;
+        background-color: transparent !important;
+        border-radius: 8px !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        color: #64748B !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        box-shadow: none !important;
+        transition: all 0.2s ease !important;
+    }
 
-.stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {
-    color: #334155 !important;
-    font-weight: 700 !important;
-    font-size: 1.05rem !important;
-}
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #E2E8F0 !important;
+        color: #0F172A !important;
+    }
 
-.stTabs [aria-selected="true"] {
-    background-color: #2563EB !important;
-    border-color: #1D4ED8 !important;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4) !important;
-}
+    .stTabs [aria-selected="true"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+    }
 
-.stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {
-    color: #FFFFFF !important;
-    font-weight: 800 !important;
-}
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {
+        color: #0284C7 !important;
+        font-weight: 700 !important;
+    }
 
-/* BOTONES DE OPCIÓN (RADIO) */
-div[role="radiogroup"] {
-    background-color: #F8FAFC !important;
-    padding: 12px !important;
-    border-radius: 10px !important;
-    border: 1px solid #E2E8F0 !important;
-    gap: 15px !important;
-}
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {
+        color: #64748B !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+    }
 
-div[role="radiogroup"] label {
-    background-color: #FFFFFF !important;
-    padding: 8px 14px !important;
-    border-radius: 8px !important;
-    border: 1px solid #CBD5E1 !important;
-}
+    /* CAMPOS INTERACTIVOS (INPUTS Y SELECTS) */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"] > div,
+    input {
+        background-color: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 8px !important;
+        color: #0F172A !important;
+        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+    }
 
-div[role="radiogroup"] label p {
-    color: #0F172A !important;
-    font-weight: 700 !important;
-}
+    div[data-baseweb="select"]:hover > div,
+    div[data-baseweb="input"]:hover > div,
+    input:focus {
+        border-color: #0284C7 !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+    }
 
-/* BOTONES DE ACCIÓN PRINCIPALES */
-.stButton > button {
-    border-radius: 10px !important;
-    font-size: 1.08rem !important;
-    font-weight: 700 !important;
-    padding: 0.7rem 1.5rem !important;
-    border: none !important;
-    background-color: #2563EB !important;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3) !important;
-    transition: transform 0.05s ease-in-out !important;
-}
+    /* BOTONES DE OPCIÓN (RADIO) */
+    div[role="radiogroup"] {
+        background-color: #F8FAFC !important;
+        padding: 8px !important;
+        border-radius: 10px !important;
+        border: 1px solid #E2E8F0 !important;
+        gap: 8px !important;
+    }
 
-.stButton > button:hover {
-    transform: scale(1.02) !important;
-}
+    div[role="radiogroup"] label {
+        background-color: #FFFFFF !important;
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        border: 1px solid #E2E8F0 !important;
+        font-size: 0.95rem !important;
+        transition: all 0.15s ease !important;
+    }
 
-.stButton > button p, .stButton > button span {
-    color: #FFFFFF !important;
-}
+    div[role="radiogroup"] label:hover {
+        border-color: #CBD5E1 !important;
+        background-color: #F1F5F9 !important;
+    }
 
-/* Botón de eliminar en rojo */
-.boton-peligro button {
-    background-color: #DC2626 !important;
-}
+    /* BOTONES MODERNOS Y LIMPIOS */
+    .stButton > button {
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        padding: 0.65rem 1.25rem !important;
+        border: none !important;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.2s ease !important;
+    }
 
-/* Cajas de métricas */
-div[data-testid="stMetric"] {
-    background-color: #F8FAFC !important;
-    border: 2px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-    padding: 15px !important;
-}
+    .stButton > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.25), 0 2px 4px -2px rgba(2, 132, 199, 0.15) !important;
+    }
 
-div[data-testid="stMetricValue"] {
-    font-size: 1.8rem !important;
-    font-weight: 800 !important;
-    color: #059669 !important;
-}
+    .stButton > button p, .stButton > button span {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
 
-/* Notificaciones */
-.stSuccess {
-    background-color: #DCFCE7 !important;
-    border: 1px solid #86EFAC !important;
-    border-radius: 10px !important;
-}
+    /* BOTÓN PELIGRO / ELIMINAR */
+    .boton-peligro button {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+    }
 
-.stSuccess p, .stSuccess span {
-    color: #15803D !important;
-}
+    /* BARRA LATERAL (SIDEBAR) ELEGANTE */
+    [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+        border-right: 1px solid #1E293B !important;
+    }
 
-/* Tarjeta de sesión activa en la barra lateral */
-.tarjeta-sesion {
-    background-color: #E0F2FE;
-    padding: 14px 16px;
-    border-radius: 10px;
-    color: #0369A1;
-    font-weight: 700;
-    border: 1px solid #BAE6FD;
-    text-align: center;
-    margin-bottom: 10px;
-}
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] div {
+        color: #F8FAFC !important;
+    }
 
-/* Ocultar marca de agua técnica */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
+    .tarjeta-sesion {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px;
+        border-radius: 12px;
+        color: #FFFFFF;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+
+    /* MÉTRICAS Y TABLAS */
+    div[data-testid="stMetric"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    div[data-testid="stMetricValue"] {
+        font-size: 1.75rem !important;
+        font-weight: 800 !important;
+        color: #0284C7 !important;
+    }
+
+    /* OCULTAR ELEMENTOS INNECESARIOS DE STREAMLIT */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """
 
@@ -266,18 +299,15 @@ def normalizar_datos(datos):
     if "calificaciones" not in datos:
         datos["calificaciones"] = []
 
-    # Migración retrocompatible de alumnos -> beneficiarios
     if "alumnos" in datos and "beneficiarios" not in datos:
         datos["beneficiarios"] = datos.pop("alumnos")
     if "beneficiarios" not in datos:
         datos["beneficiarios"] = []
 
-    # Normalizar campo 'alumno' a 'beneficiario' en calificaciones
     for c in datos.get("calificaciones", []):
         if "alumno" in c and "beneficiario" not in c:
             c["beneficiario"] = c.pop("alumno")
 
-    # Carpetas por defecto
     if "carpetas" not in datos or not datos["carpetas"]:
         datos["carpetas"] = ["Tareas", "Asistencia", "Exámenes"]
     else:
@@ -285,7 +315,6 @@ def normalizar_datos(datos):
             if folder_def not in datos["carpetas"]:
                 datos["carpetas"].append(folder_def)
 
-    # Normalizar campo 'carpeta' en plan_semestres
     for t in datos.get("plan_semestres", []):
         if "carpeta" not in t or not t["carpeta"]:
             t["carpeta"] = "Tareas"
@@ -342,7 +371,6 @@ def cargar_datos():
         except Exception as e:
             st.error(f"No se pudo conectar con la base de datos en la nube: {e}")
 
-    # Respaldo local JSON
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             datos = json.load(f)
@@ -398,9 +426,10 @@ def emoji_avance(porcentaje):
 # APLICACIÓN PRINCIPAL
 def aplicacion_principal():
     st.markdown(
+        "<div class='brand-header'>"
         "<h1>🕊️ Construyendo mis Alas</h1>"
-        "<p class='subtitulo-app'>Sistema sencillo para llevar el control de "
-        "tareas, calificaciones y avance de cada persona en el programa.</p>",
+        "<p>Sistema integral de gestión de tareas, calificaciones y avance del programa.</p>"
+        "</div>",
         unsafe_allow_html=True,
     )
 
@@ -525,13 +554,13 @@ def aplicacion_principal():
                 unsafe_allow_html=True,
             )
 
-        return  # No seguir dibujando el resto de la app hasta iniciar sesión
+        return
 
     # BARRA LATERAL (usuario con sesión activa)
     with st.sidebar:
         st.markdown(
             f"<div class='tarjeta-sesion'>👤 {st.session_state.usuario_logueado}"
-            f"<br>Rol: {st.session_state.rol_logueado.upper()}</div>",
+            f"<br><small style='color:#94A3B8;'>Rol: {st.session_state.rol_logueado.upper()}</small></div>",
             unsafe_allow_html=True,
         )
 
